@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+// Para executar:
+// colocar os números do array no input.txt
+// ./a <nthreads> <tamanho> < input.txt
+
 int* array;
 int* arrayTeste;
 typedef struct {
