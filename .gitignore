@@ -1,2 +1,4 @@
 cods-lab*
 .vscode
+*.exe
+*.in
