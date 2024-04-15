@@ -10,18 +10,19 @@ float *matB;   // matriz de entrada B
 float *saida;  // matriz de saida
 
 int main(int argc, char *argv[]) {
-  char *arquivoMatrizA, *arquivoMatrizB;
+  char *arquivoMatrizA, *arquivoMatrizB, *arquivoMatrizSaida;
   int dim, err;
   double inicio, fim, delta;
 
   // leitura e avaliacao dos parametros de entrada
   GET_TIME(inicio);
-  if (argc < 3) {
-    fprintf(stderr, "Digite: %s <arquivo matriz A> <arquivo matriz B>\n", argv[0]);
+  if (argc < 4) {
+    fprintf(stderr, "Digite: %s <arquivo matriz A> <arquivo matriz B> <arquivo matriz saida>\n", argv[0]);
     return 1;
   }
   arquivoMatrizA = argv[1];
   arquivoMatrizB = argv[2];
+  arquivoMatrizSaida = argv[3];
 
   err = leMatrizBinario(arquivoMatrizA, &matA, &dim);
   if (err) return err;
@@ -46,7 +47,9 @@ int main(int argc, char *argv[]) {
   delta = fim - inicio;
   printf("Tempo multiplicacao (dimensao %d): %lf\n", dim, delta);
 
-  // TODO: escrita em binario
+  // escrita em binario
+  err = escreveMatrizBinario(arquivoMatrizSaida, saida, dim);
+  if (err) return err;
 
   // liberacao da memoria
   GET_TIME(inicio);

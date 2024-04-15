@@ -86,5 +86,33 @@ int leMatrizBinario(char *arquivo, float **matriz, int *dim) {
     return 4;
   }
 
+  fclose(descritorArquivo);
+
+  return 0;
+}
+
+int escreveMatrizBinario(char *arquivoSaida, float *matriz, int dim) {
+  FILE *descritorArquivo;
+  size_t ret;
+  int linhas = dim, colunas = dim;
+  int tam = dim * dim;
+
+  descritorArquivo = fopen(arquivoSaida, "wb");
+  if (!descritorArquivo) {
+    fprintf(stderr, "Erro de abertura do arquivo\n");
+    return 3;
+  }
+
+  // escreve numero de linhas e de colunas
+  ret = fwrite(&linhas, sizeof(int), 1, descritorArquivo);
+  ret = fwrite(&colunas, sizeof(int), 1, descritorArquivo);
+  // escreve os elementos da matriz
+  ret = fwrite(matriz, sizeof(float), tam, descritorArquivo);
+  if (ret < tam) {
+    fprintf(stderr, "Erro de escrita no  arquivo\n");
+    return 4;
+  }
+  fclose(descritorArquivo);
+
   return 0;
 }
