@@ -1,0 +1,1 @@
+gcc geraMatrizBinario.c -o geraMatrizBinario -Wall -lpthread && ./geraMatrizBinario $2 $2 matA && ./geraMatrizBinario $2 $2 matB

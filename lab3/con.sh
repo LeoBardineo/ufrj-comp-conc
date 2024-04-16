@@ -1,0 +1,1 @@
+gcc concorrente.c -o concorrente -Wall -lpthread && ./concorrente matA matB matSaidaConc 5
