@@ -1,1 +1,1 @@
-gcc concorrente.c -o concorrente -Wall -lpthread && ./concorrente matA matB matSaidaConc 5
+gcc concorrente.c -o concorrente -Wall -lpthread && ./concorrente matrizA matrizB matSaidaConc 4

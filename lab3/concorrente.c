@@ -20,6 +20,7 @@ void *tarefa(void *arg) {
   int linhaInicial = args->linhaInicial;
   int linhaFinal = args->linhaFinal;
   int dim = args->dim;
+
   for (int i = linhaInicial; i < linhaFinal; i++) {
     for (int j = 0; j < dim; j++) {
       for (int k = 0; k < dim; k++) {
@@ -86,7 +87,7 @@ int main(int argc, char *argv[]) {
     (args + i)->dim = dim;
 
     if (i == nThreads - 1) {
-      (args + i)->linhaFinal = nThreads;
+      (args + i)->linhaFinal = dim;
     }
 
     if (pthread_create(tid + i, NULL, tarefa, (void *)(args + i))) {
