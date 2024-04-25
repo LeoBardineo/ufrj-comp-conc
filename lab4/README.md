@@ -22,3 +22,14 @@
 
 ### Atividade 3
 
+Feito utilizando o computador do lab, que tem i5 13500 como CPU e 16 GB RAM.
+
+1 threads, N = 10^6, Média: 0.090400, Aceleração: 1.000000000, Eficiência: 0.250000000
+2 threads, N = 10^6, Média: 0.063060, Aceleração: 1.433555344, Eficiência: 0.358388836
+4 threads, N = 10^6, Média: 0.038400, Aceleração: 2.354166667, Eficiência: 0.588541667
+8 threads, N = 10^6, Média: 0.025530, Aceleração: 3.540932237, Eficiência: 0.885233060
+
+1 threads, N = 10^7, Média: 1.937330, Aceleração: 1.000000000, Eficiência: 0.250000000
+2 threads, N = 10^7, Média: 1.229820, Aceleração: 1.575295571, Eficiência: 0.393823892
+4 threads, N = 10^7, Média: 0.668250, Aceleração: 2.899109614, Eficiência: 0.724777403
+8 threads, N = 10^7, Média: 0.418180, Aceleração: 4.632765794, Eficiência: 1.158191448
