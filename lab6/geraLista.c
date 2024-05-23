@@ -2,15 +2,18 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "primalidade.c"
+
 // descomentar o define abaixo caso deseje imprimir uma versao truncada da lista gerada no formato texto
 #define TEXTO
-#define NUMERO_MAX 1000 // número máximo que pode ser colocado na lista
+// número máximo que pode ser colocado na lista
+#define NUMERO_MAX 1000
 
 int main(int argc, char *argv[]) {
-  int *lista;               // lista de números
-  long long int N;          // quantidade de números
-  FILE *descritorArquivo;   // descritor do arquivo de saida
-  size_t ret;               // retorno da funcao de escrita no arquivo de saida
+  int *lista;              // lista de números
+  long long int N;         // quantidade de números
+  FILE *descritorArquivo;  // descritor do arquivo de saida
+  size_t ret;              // retorno da funcao de escrita no arquivo de saida
 
   // recebe os argumentos de entrada
   if (argc < 3) {
@@ -20,7 +23,7 @@ int main(int argc, char *argv[]) {
   N = atoi(argv[1]);
 
   // aloca memoria para a lista
-  lista = (int *) malloc(sizeof(int) * N);
+  lista = (int *)malloc(sizeof(int) * N);
   if (!lista) {
     fprintf(stderr, "Erro de alocao da memoria da lista\n");
     return 2;
@@ -51,7 +54,7 @@ int main(int argc, char *argv[]) {
   // escreve os elementos da lista
   ret = fwrite(lista, sizeof(int), N, descritorArquivo);
   if (ret < N) {
-    fprintf(stderr, "Erro de escrita no  arquivo\n");
+    fprintf(stderr, "Erro de escrita no arquivo\n");
     return 4;
   }
 
