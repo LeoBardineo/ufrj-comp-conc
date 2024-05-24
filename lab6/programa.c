@@ -8,17 +8,16 @@
 
 typedef struct {
   int id;
-  int primos;
 } tArgs;
 
-int *buffer, tam, totalPrimos, idVencedor;
+int *buffer, *listaQtdPrimos, tam;
 sem_t mutex, listaVazia, listaCheia;
 
 int M;
-char *arquivo;
 
 void *produtor(void *arg) {
   static int in = 0;
+  const char *arquivo = (const char *)arg;
   FILE *descritorArquivo = fopen(arquivo, "rb");
   for (int i = 0; i < M; i++) {
     int num;
@@ -51,7 +50,7 @@ void *consumidor(void *arg) {
     if (M == 0 && tam == 0) {
       sem_post(&mutex);
       sem_post(&listaCheia);
-      args->primos = qtdPrimos;
+      listaQtdPrimos[args->id] = qtdPrimos;
       printf("id %d | %d primos\n", args->id, qtdPrimos);
       pthread_exit(NULL);
     }
@@ -82,9 +81,66 @@ int main(int argc, char const *argv[]) {
 
   nThreads = atoi(argv[1]);
   M = atoi(argv[2]);
-  arquivo = argv[3];
+  const char *arquivo = argv[3];
 
-  pthread_t t_produtor;
+  listaQtdPrimos = (int *)malloc(sizeof(int) * nThreads);
+  if (listaQtdPrimos == NULL) {
+    puts("Erro Malloc");
+    return 2;
+  }
+
+  buffer = (int *)malloc(sizeof(int) * M);
+  if (buffer == NULL) {
+    puts("Erro Malloc");
+    return 2;
+  }
+
+  sem_init(&mutex, 0, 1);
+  sem_init(&listaVazia, 0, M);
+  sem_init(&listaCheia, 0, 0);
+
+  pthread_t tProdutor, *tConsumidor;
+  tConsumidor = (pthread_t *)malloc(sizeof(pthread_t) * M);
+  if (tConsumidor == NULL) {
+    puts("Erro Malloc");
+    return 2;
+  }
+
+  tArgs *threadArgs;
+  threadArgs = (tArgs *)malloc(sizeof(tArgs) * M);
+  if (threadArgs == NULL) {
+    puts("Erro Malloc");
+    return 2;
+  }
+
+  pthread_create(&tProdutor, NULL, produtor, (void *)arquivo);
+
+  for (int i = 0; i < M; i++) {
+    threadArgs[i].id = i;
+    pthread_create(&tConsumidor[i], NULL, consumidor, (void *)&threadArgs[i]);
+  }
+
+  pthread_join(tProdutor, NULL);
+
+  int maiorQtdPrimos = 0, totalQtdPrimos = 0, idVencedor;
+  for (int i = 0; i < M; i++) {
+    totalQtdPrimos += listaQtdPrimos[i];
+    if (listaQtdPrimos[i] > maiorQtdPrimos) {
+      maiorQtdPrimos = listaQtdPrimos[i];
+      idVencedor = i;
+    }
+  }
+
+  printf("Total de primos: %d\n");
+  printf("Consumidora de id %d venceu com %d primos encontrados.\n");
+
+  sem_destroy(&mutex);
+  sem_destroy(&listaVazia);
+  sem_destroy(&listaCheia);
+  free(buffer);
+  free(threadArgs);
+  free(tConsumidor);
+  free(listaQtdPrimos);
 
   return 0;
 }
