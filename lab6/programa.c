@@ -9,60 +9,59 @@
 
 typedef struct {
   int id;
+  int qtdPrimos;
 } tArgs;
 
-int *buffer, *listaQtdPrimos, tam;
+int *buffer, *listaQtdPrimos, terminouLeitura, tamC, tamP, M;
 sem_t mutex, listaVazia, listaCheia;
-
-int M;
 
 void *produtor(void *arg) {
   static int in = 0;
   const char *arquivo = (const char *)arg;
   FILE *descritorArquivo = fopen(arquivo, "rb");
-  for (int i = 0; i < M; i++) {
-    int num;
-    fread(&num, sizeof(int), 1, descritorArquivo);
-
+  int num;
+  while (fread(&num, sizeof(int), 1, descritorArquivo) == 1) {
     sem_wait(&listaVazia);
     sem_wait(&mutex);
 
     buffer[in] = num;
     in = (in + 1) % M;
-    tam++;
+    tamP++;
 
     sem_post(&mutex);
     sem_post(&listaCheia);
   }
 
+  terminouLeitura = 1;
   fclose(descritorArquivo);
+  sem_post(&mutex);
+  sem_post(&listaCheia);
   pthread_exit(NULL);
 }
 
 void *consumidor(void *arg) {
   tArgs *args = (tArgs *)arg;
   static int out = 0;
-  int qtdPrimos = 0;
+  args->qtdPrimos = 0;
 
   while (1) {
     sem_wait(&listaCheia);
     sem_wait(&mutex);
 
-    if (M == 0 && tam == 0) {
+    if (terminouLeitura && tamP == tamC) {
       sem_post(&mutex);
       sem_post(&listaCheia);
-      listaQtdPrimos[args->id] = qtdPrimos;
-      printf("id %d | %d primos\n", args->id, qtdPrimos);
+      listaQtdPrimos[args->id] = args->qtdPrimos;
+      printf("%d  | %d\n", args->id, args->qtdPrimos);
       pthread_exit(NULL);
     }
 
     int num = buffer[out];
     out = (out + 1) % M;
-    tam--;
-    M--;
+    tamC++;
 
     if (ehPrimo(num))
-      qtdPrimos++;
+      args->qtdPrimos++;
 
     sem_post(&mutex);
     sem_post(&listaVazia);
@@ -72,8 +71,7 @@ void *consumidor(void *arg) {
 }
 
 int main(int argc, char const *argv[]) {
-  int nThreads, err;
-  long long int N;
+  int nThreads;
 
   if (argc < 4) {
     fprintf(stderr, "Digite: %s <quantidade de threads> <tamanho do buffer> <arquivo entrada>\n", argv[0]);
@@ -116,15 +114,23 @@ int main(int argc, char const *argv[]) {
 
   pthread_create(&tProdutor, NULL, produtor, (void *)arquivo);
 
+  printf("id | qtdPrimos\n");
+  printf("---+----------\n");
   for (int i = 0; i < M; i++) {
     threadArgs[i].id = i;
     pthread_create(&tConsumidor[i], NULL, consumidor, (void *)&threadArgs[i]);
   }
 
   pthread_join(tProdutor, NULL);
+  for (int i = 0; i < nThreads; i++) {
+    if (pthread_join(tConsumidor[i], NULL) != 0) {
+      fprintf(stderr, "Erro pthread_join.\n");
+      return 3;
+    }
+  }
 
-  int maiorQtdPrimos = 0, totalQtdPrimos = 0, idVencedor;
-  for (int i = 0; i < M; i++) {
+  int maiorQtdPrimos = -1, totalQtdPrimos = 0, idVencedor;
+  for (int i = 0; i < nThreads; i++) {
     totalQtdPrimos += listaQtdPrimos[i];
     if (listaQtdPrimos[i] > maiorQtdPrimos) {
       maiorQtdPrimos = listaQtdPrimos[i];
@@ -132,8 +138,8 @@ int main(int argc, char const *argv[]) {
     }
   }
 
-  printf("Total de primos: %d\n");
-  printf("Consumidora de id %d venceu com %d primos encontrados.\n");
+  printf("Total de primos: %d\n", totalQtdPrimos);
+  printf("Consumidora de id %d venceu com %d primos encontrados.\n", idVencedor, maiorQtdPrimos);
 
   sem_destroy(&mutex);
   sem_destroy(&listaVazia);
