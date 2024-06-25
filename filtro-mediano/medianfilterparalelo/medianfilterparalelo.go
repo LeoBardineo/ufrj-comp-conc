@@ -9,12 +9,17 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strconv"
+	"strings"
 	"sync"
+	"time"
 )
 
 const DEBUG = true
+const REGIST_TIMER = true
 
 func MedianFilter(caminhoImagemEntrada string, caminhoImagemSaida string, tamanhoJanela int, nThreads int) {
+    inicioTotal := time.Now()
     // Abre a imagem de entrada de acordo com o camminho especificado
     arq, err := os.Open(caminhoImagemEntrada)
     if err != nil {
@@ -46,6 +51,22 @@ func MedianFilter(caminhoImagemEntrada string, caminhoImagemSaida string, tamanh
 	if err != nil {
 		log.Fatalf("Erro ao salvar a imagem: %v", err)
 	}
+
+    duracaoTotal := time.Since(inicioTotal)
+    duracaoStr := strconv.FormatFloat(duracaoTotal.Seconds(), 'f', 2, 64)
+    
+    if REGIST_TIMER {
+        logfile := strings.Split(caminhoImagemEntrada, ".")[0] + "_janela" + strconv.Itoa(tamanhoJanela) + "_threads" + strconv.Itoa(nThreads)
+        arquivo, err := os.OpenFile("logs/"+logfile+".out", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
+        if err != nil {
+            log.Fatal("Erro ao abrir ou criar o arquivo:", err)
+        }
+        defer arquivo.Close()
+        
+        if _, err := arquivo.WriteString(duracaoStr + "\n"); err != nil {
+            log.Fatal("Erro ao criar arquivo", err)
+        }
+    }
 
     if DEBUG {
         fmt.Printf("Filtro mediana aplicado com sucesso na imagem \"%s\" e salvo em \"%s\"!\n", caminhoImagemEntrada, caminhoImagemSaida)
