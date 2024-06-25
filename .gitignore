@@ -2,3 +2,7 @@ cods-lab*
 .vscode
 *.exe
 *.in
+*_salt.png
+*_median.png
+*_median_paralelo.png
+filtro-mediano/logs/*
