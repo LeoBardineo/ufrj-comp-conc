@@ -3,25 +3,54 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 
+	"filtro-mediano/equalimg"
 	"filtro-mediano/medianfilter"
+	"filtro-mediano/medianfilterparalelo"
 	"filtro-mediano/saltandpepper"
 )
 
+// Aplicar o salt and pepper na imagem de entrada
 const APPLY_SALTANDPEPPER = true
 
+// Automáticamente pegar o número de CPU de threads, se não, colocar manualmente via CLI
+const NTHREADS_AUTOMATIC = true
+
+// Executar o algoritmo sequencial
+const EXEC_SEQ = true
+
+// Comparar as duas imagens de saída, sequencial e paralela
+const COMPARE_IMG = true
+
 func main(){
-	if(len(os.Args) < 3) {
-		fmt.Printf("Execute da seguinte maneira: %s <caminhoImagemEntrada> <tamanhoJanela>\n", "go run main.go")
+	nArgumentos := 4
+	nThreads := 0
+
+	if NTHREADS_AUTOMATIC {
+		nArgumentos = 3
+		nThreads = runtime.NumCPU()
+	}
+
+	if(len(os.Args) < nArgumentos) {
+		fmt.Printf("Execute da seguinte maneira: %s <caminhoImagemEntrada> <tamanhoJanela> ", "go run main.go")
+		if !NTHREADS_AUTOMATIC {
+			fmt.Print("<nThreads>\n")
+		} else {
+			fmt.Print("\n")
+		}
 		os.Exit(1)
 	}
 
     // Pega o caminho da imagem do primeiro argumento passado
     caminhoImagemEntrada := os.Args[1]
-	caminhoImagemSalt := strings.Split(caminhoImagemEntrada, ".")[0] + "_salt.jpg"
-	caminhoImagemSaida := strings.Split(caminhoImagemEntrada, ".")[0] + "_median.jpg"
+	nomeImagem := strings.Split(caminhoImagemEntrada, ".")[0]
+	extImagem := strings.Split(caminhoImagemEntrada, ".")[1]
+	caminhoImagemSalt := nomeImagem + "_salt." + extImagem
+	caminhoImagemSaida := nomeImagem + "_median." + extImagem
+	caminhoImagemSaidaParalelo := nomeImagem + "_median_paralelo." + extImagem
 
     // Pega o tamanho da janela do segundo argumento passado
     tamanhoJanela, err := strconv.Atoi(os.Args[2])
@@ -40,5 +69,13 @@ func main(){
 		caminhoImagemSalt = caminhoImagemEntrada
 	}
 
-	medianfilter.MedianFilter(caminhoImagemSalt, caminhoImagemSaida, tamanhoJanela)
+	if EXEC_SEQ {
+		medianfilter.MedianFilter(caminhoImagemSalt, caminhoImagemSaida, tamanhoJanela)
+	}
+
+	medianfilterparalelo.MedianFilter(caminhoImagemSalt, caminhoImagemSaidaParalelo, tamanhoJanela, nThreads)
+
+	if COMPARE_IMG {
+		equalimg.CompararImagens(caminhoImagemSaida, caminhoImagemSaidaParalelo)
+	}
 }

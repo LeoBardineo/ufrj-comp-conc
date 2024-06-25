@@ -1,4 +1,4 @@
-package medianfilter
+package medianfilterparalelo
 
 import (
 	"fmt"
@@ -9,11 +9,12 @@ import (
 	"log"
 	"os"
 	"sort"
+	"sync"
 )
 
 const DEBUG = true
 
-func MedianFilter(caminhoImagemEntrada string, caminhoImagemSaida string, tamanhoJanela int) {
+func MedianFilter(caminhoImagemEntrada string, caminhoImagemSaida string, tamanhoJanela int, nThreads int) {
     // Abre a imagem de entrada de acordo com o camminho especificado
     arq, err := os.Open(caminhoImagemEntrada)
     if err != nil {
@@ -31,7 +32,7 @@ func MedianFilter(caminhoImagemEntrada string, caminhoImagemSaida string, tamanh
 	}
 
     // Aplica o filtro mediana na imagem
-    filteredImg := aplicaMedianFilter(img, tamanhoJanela)
+    filteredImg := aplicaMedianFilter(img, tamanhoJanela, nThreads)
 
 	// Cria um arquivo para salvar a nova imagem
 	outFile, err := os.Create(caminhoImagemSaida)
@@ -51,7 +52,7 @@ func MedianFilter(caminhoImagemEntrada string, caminhoImagemSaida string, tamanh
     }
 }
 
-func aplicaMedianFilter(img image.Image, tamanhoJanela int) image.Image {
+func aplicaMedianFilter(img image.Image, tamanhoJanela int, nThreads int) image.Image {
     // Pega a dimensão da imagem
     bounds := img.Bounds()
 
@@ -59,13 +60,35 @@ func aplicaMedianFilter(img image.Image, tamanhoJanela int) image.Image {
     // com as mesmas dimensões da imagem original
     filteredImg := image.NewRGBA(bounds)
 
-    // Percorre cada pixel, aplica a mediana dos seus vizinhos
-    // e salva o valor na imagem criada anteriormente
-    for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-        for x := bounds.Min.X; x < bounds.Max.X; x++ {
-            filteredImg.Set(x, y, medianPixel(img, x, y, tamanhoJanela))
-        }
-    }
+    var wg sync.WaitGroup
+	linhasPorThread := (bounds.Max.Y - bounds.Min.Y) / nThreads
+
+    // Para cada thread, executa uma goroutine que irá realiazr a mediana dos pixels
+    // para suas respectivas linhas
+	for i := 0; i < nThreads; i++ {
+        inicioLinha := bounds.Min.Y + i*linhasPorThread
+		fimLinha := inicioLinha + linhasPorThread
+
+        // Se for a última thread, vai até o final da imagem,
+        // cobrindo toda a imagem mesmo se a divisão da altura por threads tiver resto
+		if i == nThreads - 1 {
+            fimLinha = bounds.Max.Y
+		}
+        
+		wg.Add(1)
+		go func(startY, endY int) {
+            defer wg.Done()
+            // Percorre cada pixel, aplica a mediana dos seus vizinhos
+            // e salva o valor na imagem criada anteriormente
+			for y := startY; y < endY; y++ {
+				for x := bounds.Min.X; x < bounds.Max.X; x++ {
+					filteredImg.Set(x, y, medianPixel(img, x, y, tamanhoJanela))
+				}
+			}
+		}(inicioLinha, fimLinha)
+	}
+
+	wg.Wait()
 
     return filteredImg
 }

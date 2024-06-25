@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"image/jpeg"
+	_ "image/png"
 	"log"
 	"math/rand"
 	"os"
