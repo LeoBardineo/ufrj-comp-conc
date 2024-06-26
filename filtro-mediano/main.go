@@ -12,6 +12,7 @@ import (
 	"filtro-mediano/medianfilter"
 	"filtro-mediano/medianfilterparalelo"
 	"filtro-mediano/saltandpepper"
+	"filtro-mediano/createlog"
 )
 
 // Aplicar o salt and pepper na imagem de entrada
@@ -21,13 +22,16 @@ const APPLY_SALTANDPEPPER = true
 const NTHREADS_AUTOMATIC = false
 
 // Executar o algoritmo sequencial
-const EXEC_SEQ = false
+const EXEC_SEQ = true
 
 // Executar o algoritmo paralelo
 const EXEC_PARALELO = true
 
 // Comparar as duas imagens de saída, sequencial e paralela
 const COMPARE_IMG = false
+
+// Fazer o log da duracao
+const LOG_DURATION = true
 
 func main(){
 	nArgumentos := 4
@@ -78,14 +82,19 @@ func main(){
 	}
 
 	if EXEC_SEQ {
-		inicioTotal := time.Now()
-		medianfilter.MedianFilter(caminhoImagemSalt, caminhoImagemSaida, tamanhoJanela)
-		duracaoTotal := time.Since(inicioTotal)
-		fmt.Println(duracaoTotal)
+		duracaoSeq := medianfilter.MedianFilter(caminhoImagemSalt, caminhoImagemSaida, tamanhoJanela)
 	}
 
 	if EXEC_PARALELO {
-		medianfilterparalelo.MedianFilter(caminhoImagemSalt, caminhoImagemSaidaParalelo, tamanhoJanela, nThreads)
+		duracaoPar := medianfilterparalelo.MedianFilter(caminhoImagemSalt, caminhoImagemSaidaParalelo, tamanhoJanela, nThreads)
+	}
+
+	if LOG_DURATION {
+		logFileName = nomeImagem + "_janela" + strconv.Itoa(tamanhoJanela)
+		logFileSeq := logFileName + "_seq"
+		logFilePar := logFileName + "_threads" + strconv.Itoa(nThreads)
+		createlog.CreateLog(duracaoSeq, logFileSeq)
+		createlog.CreateLog(duracaoPar, logFilePar)
 	}
 
 	if COMPARE_IMG {

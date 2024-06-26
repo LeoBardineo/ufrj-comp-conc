@@ -15,7 +15,7 @@ import (
 const DEBUG = true
 
 // Taxa de pixels que serão aplicado o salt and pepper
-const taxaSaltPepper = 0.02
+const taxaSaltPepper = 0.1
 
 func ApplySaltAndPepper(caminhoImagemSaltEntrada string, caminhoImagemSaltSaida string) {
 	// Abre a imagem de entrada de acordo com o camminho especificado

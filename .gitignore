@@ -6,3 +6,4 @@ cods-lab*
 *_median.png
 *_median_paralelo.png
 filtro-mediano/logs/*
+!filtro-mediano/logs/.gitkeep
