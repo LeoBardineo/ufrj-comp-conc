@@ -6,13 +6,12 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"time"
 
+	"filtro-mediano/createlog"
 	"filtro-mediano/equalimg"
 	"filtro-mediano/medianfilter"
 	"filtro-mediano/medianfilterparalelo"
 	"filtro-mediano/saltandpepper"
-	"filtro-mediano/createlog"
 )
 
 // Aplicar o salt and pepper na imagem de entrada
@@ -81,20 +80,22 @@ func main(){
 		caminhoImagemSalt = caminhoImagemEntrada
 	}
 
+	logFileName := nomeImagem + "_janela" + strconv.Itoa(tamanhoJanela)
+
 	if EXEC_SEQ {
 		duracaoSeq := medianfilter.MedianFilter(caminhoImagemSalt, caminhoImagemSaida, tamanhoJanela)
+		if LOG_DURATION {
+			logFileSeq := logFileName + "_seq"
+			createlog.CreateLog(duracaoSeq, logFileSeq)
+		}
 	}
 
 	if EXEC_PARALELO {
 		duracaoPar := medianfilterparalelo.MedianFilter(caminhoImagemSalt, caminhoImagemSaidaParalelo, tamanhoJanela, nThreads)
-	}
-
-	if LOG_DURATION {
-		logFileName = nomeImagem + "_janela" + strconv.Itoa(tamanhoJanela)
-		logFileSeq := logFileName + "_seq"
-		logFilePar := logFileName + "_threads" + strconv.Itoa(nThreads)
-		createlog.CreateLog(duracaoSeq, logFileSeq)
-		createlog.CreateLog(duracaoPar, logFilePar)
+		if LOG_DURATION {
+			logFilePar := logFileName + "_threads" + strconv.Itoa(nThreads)
+			createlog.CreateLog(duracaoPar, logFilePar)
+		}
 	}
 
 	if COMPARE_IMG {

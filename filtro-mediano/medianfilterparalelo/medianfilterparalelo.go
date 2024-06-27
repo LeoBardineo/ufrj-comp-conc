@@ -9,8 +9,6 @@ import (
 	"log"
 	"os"
 	"sort"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 )
@@ -18,7 +16,7 @@ import (
 const DEBUG = true
 const REGIST_TIMER = true
 
-func MedianFilter(caminhoImagemEntrada string, caminhoImagemSaida string, tamanhoJanela int, nThreads int) (duracao Duration) {
+func MedianFilter(caminhoImagemEntrada string, caminhoImagemSaida string, tamanhoJanela int, nThreads int) (duracao time.Duration) {
     inicioTotal := time.Now()
     // Abre a imagem de entrada de acordo com o camminho especificado
     arq, err := os.Open(caminhoImagemEntrada)

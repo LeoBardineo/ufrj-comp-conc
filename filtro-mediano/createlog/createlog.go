@@ -1,9 +1,10 @@
 package createlog
 
-import(
-	"strconv"
-	"os"
+import (
 	"log"
+	"os"
+	"strconv"
+	"time"
 )
 
 func CreateLog(duracao time.Duration, logFile string) {
